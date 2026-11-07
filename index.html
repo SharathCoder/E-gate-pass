@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zing Digital Gate Pass</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2563eb">
+    <link rel="stylesheet" href="style.css?v=4">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+<div id="notificationArea"></div>
+
+<div id="instructionsModalOverlay" class="hidden" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 3000; display: flex; align-items: center; justify-content: center;">
+  <div class="card fade-in" style="width: 90%; max-width: 500px; max-height: 85vh; overflow-y: auto; position: relative;">
+    <h2 style="color: var(--danger); text-align: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">Important Instructions</h2>
+    <div style="font-size: 0.9rem; color: #475569; margin-top: 15px; line-height: 1.5;">
+      <p style="font-weight: bold; margin-bottom: 15px;">A QR Pass will NOT be generated under the following conditions:</p>
+      
+      <h4 style="color: #1e293b; margin: 10px 0 5px 0;">1. Invalid USN</h4>
+      <ul style="margin: 0 0 10px 20px;"><li>Please enter a valid and registered USN.</li></ul>
+
+      <h4 style="color: #1e293b; margin: 10px 0 5px 0;">2. No Internet Connection</h4>
+      <ul style="margin: 0 0 10px 20px;"><li>Check your internet connection and reload the page.</li></ul>
+
+      <h4 style="color: #1e293b; margin: 10px 0 5px 0;">3. Location Access Disabled</h4>
+      <ul style="margin: 0 0 10px 20px;">
+        <li>Enable location services on your device.</li>
+        <li>Ensure your browser is allowed to access location in Site Settings.</li>
+        <li>QR Pass generation is allowed only when you are within approximately 850 meters of the campus.</li>
+      </ul>
+
+      <h4 style="color: #1e293b; margin: 10px 0 5px 0;">4. Active QR Pass Already Exists</h4>
+      <ul style="margin: 0 0 10px 20px;">
+        <li>Only one QR Pass can be active at a time.</li>
+        <li>If you have recently generated a QR Pass, wait until its 1-hour validity expires.</li>
+      </ul>
+
+      <h4 style="color: #1e293b; margin: 10px 0 5px 0;">5. Pending Return Entry</h4>
+       <ul style="margin: 0 0 10px 20px;">
+         <li>If your QR was scanned while exiting the campus, you must use the same QR Pass when returning.</li>
+         <li>A new QR Pass cannot be generated until your return entry is recorded by the watchman.</li>
+       </ul>
+
+      <h4 style="color: #1e293b; margin: 10px 0 5px 0;">6. Consistent Google Account</h4>
+       <ul style="margin: 0 0 10px 20px;">
+          <li>You must log in using the exact same Google account used to register and create your PIN.</li>
+          <li>Changing Google accounts will trigger identity verification security blocks and prevent pass generation.</li>
+        </ul>
+
+      <div style="background: #f1f5f9; padding: 12px; border-radius: 8px; margin-top: 20px; font-size: 0.85rem;">
+        <strong>Note:</strong> All exit and entry records are automatically stored in the system. Do not share your QR Pass or Security PIN with others. Contact the Administrator if you continue to face any issues.
+      </div>
+    </div>
+    <button id="btnAcknowledgeInstructions" class="btn-primary" style="margin-top: 20px; background: #10b981;">I Understand</button>
+  </div>
+</div>
+
+<div class="app-container">
+        <nav class="global-header">
+           <a href="index.html" class="header-logo">ZIN<span>G</span></a>
+           <div class="header-actions">
+              <span id="navUserName" class="user-greeting">Loading...</span>
+              <button id="btnChangePin" class="btn-small" style="background: #f59e0b; display: none;">Change PIN</button>
+              <button id="btnLogout" class="btn-small" style="background: var(--danger);">Logout</button>
+            </div>
+        </nav>
+
+      <div id="pinModalOverlay" class="hidden" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 2000; display: flex; align-items: center; justify-content: center;">
+        <div class="card" style="width: 90%; max-width: 400px; text-align: center;">
+          <h2 id="pinModalTitle">Security PIN</h2>
+           <p id="pinModalDesc" style="font-size: 0.9rem; color: #64748b; margin-bottom: 15px;"></p>
+        
+         <div id="pinInputGroupCurrent" class="input-group hidden">
+             <label>Current PIN</label>
+             <input type="password" id="modalPinCurrent" maxlength="4" pattern="[0-9]{4}" placeholder="****" style="text-align: center; letter-spacing: 5px; font-size: 1.2rem;">
+         </div>
+        
+          <div id="pinInputGroupNew" class="input-group">
+             <label id="lblModalPinNew">Enter 4-Digit PIN</label>
+             <input type="password" id="modalPinNew" maxlength="4" pattern="[0-9]{4}" placeholder="****" style="text-align: center; letter-spacing: 5px; font-size: 1.2rem;">
+          </div>
+
+          <div id="pinInputGroupConfirm" class="input-group hidden">
+             <label>Confirm New PIN</label>
+             <input type="password" id="modalPinConfirm" maxlength="4" pattern="[0-9]{4}" placeholder="****" style="text-align: center; letter-spacing: 5px; font-size: 1.2rem;">
+          </div>
+
+            <button id="btnSubmitPinModal" class="btn-primary" style="margin-top: 10px;">Confirm</button>
+            <button id="btnForgotPin" class="btn-outline hidden" style="margin-top: 10px; border: none; font-size: 0.85rem;">Forgot PIN?</button>
+            <button id="btnCancelPinModal" class="btn-outline hidden" style="margin-top: 10px; border: none; color: #ef4444;">Cancel</button>
+         </div>
+      </div> 
+
+        <header>
+            <h1>Smart Gate Pass</h1>
+            <p id="currentDateTime"></p>
+        </header>
+
+        <div id="studentPortal">
+            <main id="formSection" class="card fade-in">
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="margin: 0;">Generate New Pass</h2>
+                    
+                    <a href="#" id="showInstructionsLink" title="View Important Instructions" style="color: #3b82f6; background: #eff6ff; padding: 5px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; text-decoration: none;">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </a>
+                </div>
+
+                <form id="gatePassForm">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+    
+      <div class="input-group" style="grid-column: span 2;">
+    <label>USN (10 Characters)</label>
+    <div style="display: flex; gap: 10px; align-items: stretch; width: 100%;">
+        <input type="text" id="usn" placeholder="e.g., 1VV25CS071" required maxlength="10" style="flex: 1 1 auto; min-width: 0; margin-bottom: 0;">
+        <button type="button" id="btnSearchUsn" class="btn-primary" style="flex: 0 0 54px; margin: 0; padding: 0; display: flex; align-items: center; justify-content: center; min-height: 42px; border-radius: 6px;" title="Search Student">
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+        </button>
+    </div>
+</div>
+
+     <div class="input-group">
+        <label>Full Name</label>
+        <input type="text" id="studentName" readonly style="background: #e2e8f0; cursor: not-allowed; color: #475569; font-weight: bold;">
+     </div>
+     <div class="input-group">
+        <label>Department</label>
+        <input type="text" id="department" readonly style="background: #e2e8f0; cursor: not-allowed; color: #475569; font-weight: bold;">
+     </div>
+     <div class="input-group">
+    <label>Status</label>
+    <input type="text" id="status" readonly placeholder="Auto-filled from DB" style="background: #f1f5f9; cursor: not-allowed; color: #475569; font-weight: bold; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px; width: 100%; box-sizing: border-box;">
+    </div>
+     <div class="input-group">
+        <label>Room Number</label>
+        <input type="text" id="roomNumber" readonly style="background: #e2e8f0; cursor: not-allowed; color: #475569; font-weight: bold;">
+     </div>
+
+     <div class="input-group">
+        <label>Leave Date</label>
+        <input type="date" id="leaveDate" required>
+     </div>
+     <div class="input-group">
+        <label>Expected Return Time</label>
+        <input type="time" id="returnTime" required>
+     </div>
+     <div class="input-group" style="grid-column: span 2;">
+        <label>Reason for Leaving</label>
+        <textarea id="reason" placeholder="Brief reason... Your reason will be reviewed by admin !" required style="width: 100%;"></textarea>
+      </div>
+     </div>
+            <button type="submit" class="btn-primary" id="submitBtn">Submit to Admin</button>
+                </form>
+            </main>
+
+            <main id="passSection" class="card hidden fade-in">
+                <div class="pass-header">
+                    <h2>Digital Gate Pass</h2>
+                    <span class="badge" id="passIdDisplay"></span>
+                </div>
+                <div class="pass-details">
+                    <p><strong>Name:</strong> <span id="displayName"></span></p>
+                    <p><strong>USN:</strong> <span id="displayUsn"></span></p>
+                    <p><strong>Status:</strong> <span id="displayPassStatus" class="status-badge"></span></p>
+                </div>
+                <div class="qr-container">
+                   <div id="qrcode"></div>
+                   <div id="qrOverlay" class="qr-overlay hidden">
+                      <span id="qrOverlayText">EXPIRED</span>
+                  </div>
+                  <div id="qrInstructionText" class="qr-instruction fade-in">
+                     <strong>⚠️ Important:</strong> Your QR Pass is ready. Please download and save it, as it will be required for re-entry into the campus.
+                  </div>
+                </div>
+                <div class="timer-container">
+                    <p>Pass expires in:</p>
+                    <h3 id="timerDisplay">01:00:00</h3>
+                </div>
+                <div class="action-buttons">
+                    <button id="downloadBtn" class="btn-secondary">Download Pass</button>
+                    <button id="newPassBtn" class="btn-outline">Create New</button>
+                </div>
+            </main>
+        </div>
+
+        <div id="adminPortal" class="hidden fade-in">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Active Students Out</h3>
+                    <h2 id="activeCount">0</h2>
+                </div>
+                <div class="stat-card">
+                    <h3>Total Passes</h3>
+                    <h2 id="totalCount">0</h2>
+                </div>
+            </div>
+            <div class="admin-controls card">
+                <input type="text" id="searchInput" placeholder="Search by USN...">
+                <select id="filterStatus">
+                    <option value="ALL">All Statuses</option>
+                    <option value="ACTIVE">Active</option>
+                    <option value="EXPIRED">Expired</option>
+                    <option value="RETURNED">Returned</option>
+                </select>
+            </div>
+            <div class="table-container card">
+                <table id="adminTable">
+                    <thead>
+                        <tr>
+                            <th>Pass ID</th>
+                            <th>Student</th>
+                            <th>USN</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+   <footer class="global-footer">
+        <div>&copy; 2026 ZING. All Rights Reserved.</div>
+        <div class="footer-center">Version 1.0</div>
+        <div class="footer-links">
+            <a href="privacy-policy.html">Privacy Policy</a>
+            <a href="terms.html">Terms & Conditions</a>
+            <a href="support.html">Contact & Support</a>
+        </div>
+    </footer>
+</div>
+<script type="module" src="script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const timeConfig = {
+                enableTime: true,
+                noCalendar: true,
+                dateFormat: "H:i",       // Sends 24h format to backend securely
+                altInput: true,
+                altFormat: "h:i K",      // Forces 12-hour AM/PM UI format
+                disableMobile: true      // CRITICAL: Stops mobile from hijacking it!
+            };
+            
+            // Applies the fix to your returnTime input
+            if(document.getElementById('returnTime')) {
+                flatpickr("#returnTime", timeConfig);
+            }
+        });
+    </script>
+</body>
+</html>

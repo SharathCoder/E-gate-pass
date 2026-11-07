@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zing Gate Control - Watchman Portal</title>
+    <link rel="stylesheet" href="style.css?v=4">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1e293b">
+    
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+ </head>
+<body>
+    <div id="notificationArea"></div>
+    
+    <div class="app-container">
+        
+        <nav class="global-header">
+            <a href="watchman.html" class="header-logo">ZIN<span>G</span></a>
+            <div class="header-actions">
+                <span id="navUserName" class="user-greeting">Watchman Portal Loading...</span>
+                <button id="btnLogout" class="btn-small" style="background: var(--danger);">Secure Logout</button>
+            </div>
+        </nav>
+        <header>
+            <h1>Security Gate Control</h1>
+            <p>Scan student QR codes for entry/exit validation</p>
+        </header>
+
+        <main id="watchmanAuth" class="card fade-in">
+            <h2>Gate Security Login</h2>
+            <div class="input-group">
+                <label>Watchman ID / Gate Number</label>
+                <input type="text" id="watchmanIdInput" placeholder="e.g., W-GATE1" required>
+            </div>
+            <button id="btnLoginSecurity" class="btn-primary">Initialize Scanner</button>
+        </main>
+
+        <div id="scannerConsole" class="hidden fade-in">
+            
+            <main class="card">
+                <h2>Live QR Scanner</h2>
+                <div id="reader" style="width: 100%; max-width: 400px; margin: 0 auto; border: none;"></div>
+                <div class="scanner-controls">
+                    <p id="activeWatchmanDisplay" style="text-align: center; font-size: 0.85rem; margin-top: 10px; font-weight: bold;"></p>
+                </div>
+            </main>
+
+            <main id="resultCard" class="card hidden fade-in">
+                <div id="resultHeader" class="result-banner">
+                    <h2 id="resultStatusText">VERIFYING...</h2>
+                </div>
+
+                  <div class="pass-details">
+                    <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 15px;">
+                      <img id="resPhoto" src="" alt="Student Photo" style="width: 110px; height: 110px; min-width: 110px; border-radius: 50%; 
+                      object-fit: cover; background: #cbd5e1; border: 2px solid #2563eb; display: none; 
+                      box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                      <h3 id="resPassId" class="badge" style="font-size: 1.1rem; padding: 6px 12px;">PASS-XXXX</h3>
+                    </div>
+                     <p><strong>Student Name:</strong> <span id="resName">-</span></p> 
+                     <p><strong>USN:</strong> <span id="resUsn">-</span></p>
+                     <p><strong>Dept / Room:</strong> <span id="resDeptRoom">-</span></p>
+                     <p><strong>Reason:</strong> <span id="resReason">-</span></p>
+                     <p><strong>Expected Return:</strong> <span id="resReturn">-</span></p>
+                     <p><strong>Current Status:</strong> <span id="resCurrentStatus" class="status-badge">-</span></p>
+                </div>
+
+                <div id="actionArea" class="action-buttons" style="margin-top: 15px;">
+                    <button id="btnActionApprove" class="btn-primary hidden">Approve Exit</button>
+                    <button id="btnActionReturn" class="btn-secondary hidden">Log Safe Return</button>
+                    <button id="btnDismissResult" class="btn-outline">Clear & Scan Next</button>
+                </div>
+            </main>
+
+            <main class="card">
+                <h3>Recent Verification Logs</h3>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>USN</th>
+                                <th>Action</th>
+                                <th>Time</th>
+                            </tr>
+                        </thead>
+                        <tbody id="logTableBody">
+                            </tbody>
+                    </table>
+                </div>
+            </main>
+            </div> <footer class="global-footer" style="margin-top: 20px;">
+                <div>&copy; 2026 ZING. All Rights Reserved.</div>
+                <div class="footer-center">Version 1.0</div>
+                <div class="footer-links">
+                    <a href="privacy-policy.html">Privacy Policy</a>
+                    <a href="terms.html">Terms & Conditions</a>
+                    <a href="support.html">Contact & Support</a>
+                </div>
+            </footer>
+
+        </div> <script type="module" src="watchman.js"></script>
+    </body>
+</html>

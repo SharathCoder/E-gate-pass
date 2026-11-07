@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact & Support - SmartGate Pass</title>
+    <link rel="stylesheet" href="style.css?v=4">
+</head>
+<body>
+     <div class="app-container" style="max-width: 800px;">
+        <nav class="global-header">
+            <a href="javascript:history.back()" class="header-logo">ZIN<span>G</span></a>
+            <div class="header-actions"><button onclick="history.back()" class="btn-outline" style="padding: 5px 15px;">&larr; Back</button></div>
+        </nav>
+        
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+            <main class="card fade-in">
+                  <h2>Campus Security Office</h2>
+                  <div style="margin-top: 20px; line-height: 1.8;">
+                        <p><strong>📧 Email:</strong> zingcampus2025@gmail.com</p>
+                        <p><strong>🟢 WhatsApp [Dr.Binoy Mathewu]:</strong> +91 94486 22548</p>
+                        <p><strong>🟢 WhatsApp [Pankaja Ravish - Girls Hostel Coordinator]:</strong> +91 98447 52338</p>
+                        <p><strong>📍 Location:</strong> Administration Block, Security Office</p>
+                        <p><strong>🕒 Hours:</strong> Working Hours: 9:30 AM to 3:30 PM on Working Days</p>
+                 </div>
+            </main>
+
+            <main class="card fade-in">
+                <h2>Report an Issue</h2>
+                <div id="supportMsg" style="margin-bottom: 10px; font-weight: bold;"></div>
+                <form id="supportForm" style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
+                    <input type="text" id="supName" placeholder="Full Name" required>
+                    <input type="text" id="supUsn" placeholder="USN" required>
+                    <input type="email" id="supEmail" placeholder="Email Address" required>
+                    <select id="supSubject" required>
+                        <option value="">Select Subject...</option>
+                        <option value="PIN Reset Issue">PIN Reset Issue</option>
+                        <option value="QR Code Not Scanning">QR Code Not Scanning</option>
+                        <option value="Account Locked">Account Locked</option>
+                        <option value="Other">Other</option>
+                    </select>
+                    <textarea id="supDesc" placeholder="Describe your issue in detail..." rows="4" required></textarea>
+                    <button type="submit" id="btnSubmitSupport" class="btn-primary">Submit Ticket</button>
+                </form>
+            </main>
+        </div>
+    </div>
+
+    <script type="module">
+        import { db } from './firebase-config.js';
+        import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+
+        document.getElementById('supportForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btnSubmitSupport');
+            const msg = document.getElementById('supportMsg');
+            btn.innerText = "Submitting...";
+            btn.disabled = true;
+
+            try {
+                await addDoc(collection(db, "supportRequests"), {
+                    name: document.getElementById('supName').value,
+                    usn: document.getElementById('supUsn').value.toUpperCase(),
+                    email: document.getElementById('supEmail').value,
+                    subject: document.getElementById('supSubject').value,
+                    description: document.getElementById('supDesc').value,
+                    status: "OPEN",
+                    createdAt: serverTimestamp()
+                });
+                msg.innerText = "Ticket Submitted Successfully. The admin will contact you shortly.";
+                msg.style.color = "#10b981";
+                e.target.reset();
+            } catch (error) {
+                msg.innerText = "Error submitting ticket. Please call the security office.";
+                msg.style.color = "#ef4444";
+                console.error(error);
+            } finally {
+                btn.innerText = "Submit Ticket";
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

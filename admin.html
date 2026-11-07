@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Secure Gate</title>
+    <link rel="manifest" href="manifest.json"> <meta name="theme-color" content="#2563eb">
+    <link rel="stylesheet" href="style.css?v=4">
+</head>
+<body>
+    <div id="notificationArea"></div>
+
+    <div class="app-container" style="max-width: 900px;">
+        <nav class="global-header">
+           <a href="admin.html" class="header-logo">ZIN<span>G</span></a>
+              <div class="header-actions">
+                   <span id="navUserName" class="user-greeting">Admin Portal Loading...</span>
+                   <button id="btnLogout" class="btn-small" style="background: var(--danger);">Secure Logout</button>
+               </div>
+         </nav>
+
+        <header>
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 15px; margin-bottom: 10px; width: 100%;">
+                <h1 style="margin: 0; white-space: nowrap; font-size: clamp(1.5rem, 4vw, 2rem);">Security Dashboard</h1>
+        
+                <!-- Unified Mobile-Friendly Control Group -->
+                <div style="display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; width: 100%;">
+                    
+                    <!-- 1. Campus Lockdown Control -->
+                    <button id="btnLockdownToggle" style="width: auto; margin: 0; padding: 0 20px; min-height: 44px; border-radius: 30px; font-weight: bold; font-size: 0.9rem; border: none; cursor: pointer; transition: 0.3s; background: #64748b; color: white; white-space: nowrap; box-shadow: 0 2px 5px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center;">
+                        Checking State...
+                    </button>
+            
+                    <!-- 2. Cutoff Time Selector -->
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 8px; background: #1e293b; padding: 0 16px; border-radius: 30px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); min-height: 44px; box-sizing: border-box; flex-shrink: 0;">
+                        <label for="cutoffToggle" style="color: white; font-size: 0.85rem; font-weight: bold; margin: 0; white-space: nowrap; cursor: pointer;">Cutoff:</label>
+                        <select id="cutoffToggle" style="background: transparent; color: #3b82f6; border: none; font-size: 0.9rem; font-weight: bold; outline: none; cursor: pointer; margin: 0; padding: 0;">
+                            <option value="16:00" style="color: black;">4:00 PM</option>
+                            <option value="18:00" style="color: black;">6:00 PM</option>
+                        </select>
+                    </div>
+            
+                    <!-- 3. Mailbox Icon Redesigned -->
+                    <button id="btnViewSupport" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 50%; cursor: pointer; color: #cbd5e1; position: relative; transition: all 0.3s; display: flex; align-items: center; justify-content: center; padding: 0; min-height: 44px; min-width: 44px; flex-shrink: 0; box-shadow: 0 2px 5px rgba(0,0,0,0.2);" title="View Support Mail" onmouseover="this.style.background='rgba(59, 130, 246, 0.2)'; this.style.color='#3b82f6'" onmouseout="this.style.background='rgba(255, 255, 255, 0.05)'; this.style.color='#cbd5e1'">
+                        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                        <span id="supportBadge" style="position: absolute; top: -4px; right: -4px; background: #ef4444; color: white; font-size: 0.7rem; font-weight: bold; border-radius: 50%; padding: 2px 6px; display: none; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">0</span>
+                    </button>
+            
+                </div>
+            </div>
+            
+            <div id="tabsContainer" style="position: relative; display: flex; gap: 10px; justify-content: center; margin-top: 15px; padding-bottom: 15px;">
+              <button id="tabPasses" class="btn-primary tab-btn" style="background: #10b981; opacity: 1; transition: opacity 0.3s;">Live Passes</button>
+              <button id="tabStudents" class="btn-primary tab-btn" style="background: #3b82f6; opacity: 0.5; transition: opacity 0.3s;">Student Database</button>
+              <button id="tabExitData" class="btn-primary tab-btn" style="background: #f59e0b; opacity: 0.5; transition: opacity 0.3s;">Exit Data</button>
+              <button id="tabPinRequests" class="btn-primary tab-btn" style="background: #8b5cf6; opacity: 0.5; transition: opacity 0.3s;">PIN Resets</button>
+              <div id="activeLine" style="position: absolute; bottom: 0; left: 0; height: 5px; background: #10b981; border-radius: 5px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+            </div>
+        </header>
+
+        <div id="passesSection" class="fade-in">
+            <div class="stats-grid">
+                <div class="stat-card"><h3>Active Students Out</h3><h2 id="activeCount">0</h2></div>
+                <div class="stat-card"><h3>Total Passes</h3><h2 id="totalCount">0</h2></div>
+            </div>
+            
+            <div class="admin-controls card">
+                <input type="text" id="searchInput" placeholder="Search passes by USN...">
+                <select id="filterStatus">
+                    <option value="ALL">All Statuses</option>
+                    <option value="PENDING">Pending</option>
+                    <option value="ACTIVE">Active</option>
+                    <option value="SCANNED_OUT">Scanned Out</option>
+                    <option value="RETURNED">Returned</option>
+                </select>
+            </div>
+            
+            <div class="table-container card">
+                <table id="adminTable">
+                    <thead><tr><th>Pass ID</th><th>Student</th><th>Status</th><th>Action</th></tr></thead>
+                    <tbody id="adminTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="studentsSection" class="fade-in hidden">
+            <div class="card">
+                <h2>Register New Student</h2>
+      <form id="addStudentForm" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
+        
+        <div class="input-group">
+          <label>Full Name</label>
+          <input type="text" id="newDbName" required>
+        </div>
+        
+        <div class="input-group">
+          <label>USN</label>
+          <input type="text" id="newDbUsn" required placeholder="e.g. 1VW24AB123">
+        </div>
+
+        <div class="input-group">
+          <label>Department</label>
+          <input type="text" id="newDbDept" required>
+        </div>
+
+        <div class="input-group">
+          <label>Hostel Room</label>
+          <input type="text" id="newDbRoom" required placeholder="e.g. G-004">
+        </div>
+
+        <div class="input-group">
+          <label>Secret PIN (Managed by Student)</label>
+          <div style="position: relative; display: flex; align-items: center;">
+            <input type="text" id="newDbPin" readonly placeholder="Waiting for student..." style="width: 100%; padding-right: 40px; margin-bottom: 0; background: #e2e8f0; cursor: not-allowed; color: #475569; font-weight: bold;">
+            <span id="togglePin" style="position: absolute; right: 10px; cursor: pointer; color: #64748b; display: flex; align-items: center;" title="Show/Hide PIN">
+              <svg id="eyeIcon" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+              </svg>
+            </span>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label>Status</label>
+          <select id="newDbStatus">
+            <option value="ACTIVE">ACTIVE</option>
+            <option value="SUSPENDED">SUSPENDED</option>
+          </select>
+        </div>
+
+        <div class="input-group" style="grid-column: span 2;">
+          <label>Student Photo (Auto-Compressed)</label>
+          <input type="file" id="newDbPhoto" accept="image/jpeg, image/png" style="padding: 8px; background: #fff; border: 1px dashed #cbd5e1; border-radius: 8px;">
+          <small style="color: #64748b; margin-top: 4px;">Photo will be safely compressed to text and stored internally to keep your database 100% free.</small>
+        </div>
+
+        <button type="submit" class="btn-primary" style="grid-column: span 2;">Add to Master Database</button>
+      </form>
+            </div>
+           <!-- NEW: Resolve USN Conflict Card -->
+            <div class="card mt-20 reset-usn-section">
+                <h3>Resolve USN Conflict</h3>
+                <p style="margin-bottom: 10px; color: #64748b; font-size: 0.9rem;">Unlink a USN from an incorrect account so the real student can register.</p>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="conflictUSN" placeholder="Enter Stolen USN (e.g., 1VW24AB123)" style="flex: 1;">
+                    <button onclick="resetStudentUSN()" class="btn-primary" style="background: #ef4444; width: auto;">Unlink USN</button>
+                </div>
+                <p id="resetMessage" style="margin-top: 10px; font-weight: bold;"></p>
+            </div>
+            <!-- END NEW -->
+
+            <div class="card mt-20">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                    <h2>Master Records</h2>
+                    <input type="text" id="searchStudentInput" placeholder="Search students by USN..." style="padding: 8px; border-radius: 5px;">
+                </div>
+                  <div class="table-container">
+                    <table>
+                     <thead><tr><th>USN</th><th>Name</th><th>Dept</th><th>Room</th><th>Status</th><th>Access</th><th>Actions</th></tr></thead>
+                     <tbody id="masterStudentBody"></tbody>
+                   </table>
+                </div>
+                <div id="paginationControls" style="display: flex; justify-content: center; gap: 8px; margin-top: 15px; padding-bottom: 10px; flex-wrap: wrap;"></div>
+            </div>
+        </div>
+
+        <div id="exitDataSection" class="fade-in hidden">
+            <div class="stats-grid" style="display: flex; gap: 15px; margin-bottom: 20px;">
+                <div class="stat-card" style="flex: 1; text-align: center;">
+                    <h3>Total Exits Today</h3><h2 id="totalExitsCount">0</h2>
+                </div>
+                <div class="stat-card" style="flex: 1; text-align: center; border-bottom: 4px solid #10b981;">
+                    <h3>Day Exits</h3><h2 id="normalExitsCount" style="color: #10b981;">0</h2>
+                </div>
+                <div class="stat-card" style="flex: 1; text-align: center; border-bottom: 4px solid #ef4444;">
+                    <h3>Night Exits</h3><h2 id="abnormalExitsCount" style="color: #ef4444;">0</h2>
+                </div>
+            </div>
+
+          <div class="admin-controls card" style="display: flex; gap: 10px; margin-bottom: 15px; align-items: center; flex-wrap: wrap;">
+    <input type="text" id="searchExitInput" placeholder="Search USN or Name..." style="flex: 1; min-width: 200px;">
+    <select id="filterExitType">
+        <option value="ALL">All Exits</option>
+        <option value="DAY">Day Only</option>
+        <option value="NIGHT">Night Only</option>
+    </select>
+    <button id="btnExportCSV" class="btn-primary" style="background: #10b981; width: auto;">Export CSV</button>
+    
+    <!-- NEW: Delete Selected Button (Hidden until checkboxes are clicked) -->
+    <button id="btnDeleteSelected" class="btn-primary" style="background: #ef4444; width: auto; display: none;">Delete Selected</button>
+</div>
+
+            <div class="table-container card">
+                  <table style="width: 100%;">
+                        <thead>
+                               <tr>
+                                <!-- NEW: Select All Checkbox Header -->
+                              <th style="width: 40px; text-align: center;">
+                               <input type="checkbox" id="selectAllExits" style="width: 18px; height: 18px; cursor: pointer;" title="Select All">
+                                </th>
+                              <th>USN & Name</th>
+                             <th>Room/Dept</th>
+                             <th>Exit Time</th>
+                             <th>Return Time</th>
+                             <th>Type</th>
+                             <th>Action</th>
+                          </tr>
+                         </thead>
+                      <tbody id="exitTableBody">
+        </tbody>
+    </table>
+</div>
+        </div>
+    
+    <div id="pinRequestsSection" class="fade-in hidden">
+      <div class="card">
+        <h2>PIN Reset Requests</h2>
+        <div class="table-container">
+          <table>
+            <thead><tr><th>Student Name</th><th>USN</th><th>Dept</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="pinRequestsBody"></tbody>
+          </table>
+        </div>
+      </div>
+</div>
+
+             <!-- NEW: Support Mail Modal -->
+        <div id="supportMailModal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.8); z-index: 3000; display: flex; align-items: center; justify-content: center;">
+          <div class="card fade-in" style="width: 90%; max-width: 800px; max-height: 85vh; overflow-y: auto; position: relative;">
+              <div style="display: flex; flex-direction: row; justify-content: space-between; align-items: center; width: 100%; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 15px; box-sizing: border-box;">
+                  <h2 style="margin: 0; color: #1e293b; white-space: nowrap; font-size: 1.5rem;">Contact & Support Inbox</h2>
+                  <button id="btnCloseSupportModal" style="background: none; border: none; font-size: 2.5rem; cursor: pointer; color: #ef4444; line-height: 1; padding: 0; margin: 0;">&times;</button>
+              </div>
+           <div class="table-container">
+              <table style="width: 100%;">
+              <thead><tr><th>Student</th><th>Subject</th><th>Description</th><th>Status</th><th>Action</th></tr></thead>
+              <tbody id="supportMailBody">
+                 <tr><td colspan="5" style="text-align: center;">Loading secure inbox...</td></tr>
+              </tbody>
+           </table>
+       </div>
+     </div>
+  </div>
+
+    <footer class="global-footer">
+        <div>&copy; 2026 ZING. All Rights Reserved.</div>
+        <div class="footer-center">Version 1.0</div>
+        <div class="footer-links">
+            <a href="privacy-policy.html">Privacy Policy</a>
+            <a href="terms.html">Terms & Conditions</a>
+            <a href="support.html">Contact & Support</a>
+        </div>
+    </footer>
+</div>
+<script type="module">
+     import { db } from "./firebase-config.js";
+     import { enforceRBAC, logoutUser, currentUserProfile } from './auth.js';
+     import { collection, onSnapshot, updateDoc, doc, setDoc, getDoc, getDocs, query, where, limit, serverTimestamp, deleteDoc, startAfter, orderBy } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+     enforceRBAC('admin');
+     document.getElementById('btnLogout').addEventListener('click', logoutUser);
+
+      // --- FREE PLAN: IMAGE COMPRESSOR ---
+      // This shrinks the image to 120x120 and turns it into a tiny text string
+     function processPhotoToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const img = new Image();
+          img.onload = function() {
+            const canvas = document.createElement('canvas');
+            const MAX_DIMENSION = 120; // Tiny size perfect for the Watchman screen
+            let width = img.width;
+            let height = img.height;
+
+            if (width > height) {
+              if (width > MAX_DIMENSION) {
+                height *= MAX_DIMENSION / width;
+                width = MAX_DIMENSION;
+              }
+            } else {
+              if (height > MAX_DIMENSION) {
+                width *= MAX_DIMENSION / height;
+                height = MAX_DIMENSION;
+              }
+            }
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            
+            // Convert to highly compressed JPEG text string
+            const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+            resolve(compressedBase64);
+          };
+          img.onerror = () => reject(new Error("Failed to process image."));
+          img.src = e.target.result;
+        };
+        reader.onerror = () => reject(new Error("File read error."));
+        reader.readAsDataURL(file);
+      });
+     }
+
+        // --- 1. INITIALIZE DASHBOARDS (WAIT FOR AUTH!) ---
+            document.addEventListener('authReady', () => {
+            document.getElementById('navUserName').innerText = `Warden: ${currentUserProfile.name}`;
+            
+            // These must run AFTER auth is ready so Firebase doesn't block them!
+            loadAdminDashboard();
+            // ==========================================
+             // PIN VISIBILITY TOGGLE LOGIC
+            // ==========================================
+             const togglePinBtn = document.getElementById('togglePin');
+             const pinInput = document.getElementById('newDbPin');
+             const eyeIcon = document.getElementById('eyeIcon');
+
+            if (togglePinBtn && pinInput) {
+             togglePinBtn.addEventListener('click', () => {
+             const type = pinInput.getAttribute('type') === 'password' ? 'text' : 'password';
+             pinInput.setAttribute('type', type);
+        
+              // Swap the SVG Icon (Eye vs Eye-slash)
+              if (type === 'text') {
+               eyeIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path>`;
+               } else {
+               eyeIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>`;
+               }
+             });
+           }
+            loadStudentMasterDB(); 
+            if (typeof loadExitData === 'function') {
+                loadExitData(); 
+            } else {
+                console.error("loadExitData function is missing at the bottom of the file!");
+            }
+        });
+            // Global listener to close dropdowns when clicking outside
+                window.addEventListener('click', () => {
+                  document.querySelectorAll('.dropdown-content').forEach(content => {
+                     content.classList.remove('show');
+                   });
+               });
+         
+        // TAB SWITCHING & ANIMATED BASELINE LOGIC --- 2. DOM REFERENCES FOR TABS ---
+        // ==========================================
+        const tabPasses = document.getElementById('tabPasses');
+        const tabStudents = document.getElementById('tabStudents');
+        const tabExitData = document.getElementById('tabExitData'); 
+        
+        const passesSection = document.getElementById('passesSection');
+        const studentsSection = document.getElementById('studentsSection');
+        const exitDataSection = document.getElementById('exitDataSection');
+        const pinRequestsSection = document.getElementById('pinRequestsSection');
+        const tabPinRequests = document.getElementById('tabPinRequests');
+        const activeLine = document.getElementById('activeLine');
+        const allTabs = document.querySelectorAll('.tab-btn');
+
+        // Function to move and color the line
+        function updateActiveTab(clickedBtn) {
+            if (!activeLine) return;
+            
+            // Slide the line to match the clicked button
+            activeLine.style.width = clickedBtn.offsetWidth + 'px';
+            activeLine.style.left = clickedBtn.offsetLeft + 'px';
+            
+            // Match the line color to the active tab's color
+            activeLine.style.background = clickedBtn.style.backgroundColor || clickedBtn.style.background;
+            
+            // Dim inactive tabs, light up the active one
+            allTabs.forEach(btn => btn.style.opacity = '0.4');
+            clickedBtn.style.opacity = '1';
+        }
+
+        if (tabPasses && tabStudents && tabExitData && tabPinRequests) {
+            // Initialize the line position on page load (Wait 100ms for layout to render)
+            setTimeout(() => updateActiveTab(tabPasses), 100);
+
+            tabPasses.addEventListener('click', () => {
+                passesSection.classList.remove('hidden');
+                studentsSection.classList.add('hidden');
+                exitDataSection.classList.add('hidden'); 
+                pinRequestsSection.classList.add('hidden');
+                updateActiveTab(tabPasses); // <-- Triggers animation
+            });
+
+            tabStudents.addEventListener('click', () => {
+                studentsSection.classList.remove('hidden');
+                passesSection.classList.add('hidden');
+                exitDataSection.classList.add('hidden'); 
+                pinRequestsSection.classList.add('hidden');
+                updateActiveTab(tabStudents); // <-- Triggers animation
+            });
+
+            tabExitData.addEventListener('click', () => {
+                exitDataSection.classList.remove('hidden'); 
+                passesSection.classList.add('hidden');
+                studentsSection.classList.add('hidden');
+                pinRequestsSection.classList.add('hidden');
+                updateActiveTab(tabExitData); // <-- Triggers animation
+            });
+
+            tabPinRequests.addEventListener('click', () => {
+                pinRequestsSection.classList.remove('hidden'); 
+                passesSection.classList.add('hidden');
+                studentsSection.classList.add('hidden');
+                exitDataSection.classList.add('hidden');
+                updateActiveTab(tabPinRequests); // <-- Triggers animation
+                loadPinRequests(); // Loads the data when tab is clicked
+            });
+        }
+
+        // ==========================================
+        // 1. LIVE PASSES DASHBOARD LOGIC 
+        // ==========================================
+        let unsubscribePasses = null;
+            function loadAdminDashboard() {
+                 const adminTableBody = document.getElementById('adminTableBody');
+                 const searchInput = document.getElementById('searchInput');
+                 const filterStatus = document.getElementById('filterStatus');
+                 const passesRef = collection(db, "gate_passes");
+
+                 if (unsubscribePasses) unsubscribePasses();
+
+                 // ONLY FETCH PASSES THAT ARE NOT FULLY RESOLVED TO SAVE MASSIVE DB COSTS
+                 const activeQuery = query(
+                    passesRef, 
+                    where("status", "in", ["PENDING_APPROVAL", "ACTIVE", "SCANNED_OUT", "AUTO_APPROVED"])
+                );
+
+                unsubscribePasses = onSnapshot(activeQuery, (snapshot) => {
+                let allPasses = [];
+                let activeCount = 0; // This controls the big number at the top
+                
+                snapshot.forEach((docSnap) => {
+                    let data = docSnap.data(); 
+                    data.docId = docSnap.id; 
+                    
+                    // 1. Auto-expire old passes
+                    if (data.status === 'ACTIVE' && Date.now() > data.expiryTimestamp) {
+                        // Defer the write to the end of the event queue to prevent SDK cache crash
+                        setTimeout(() => {
+                            updateDoc(doc(db, "gate_passes", data.docId), { status: "EXPIRED" }).catch(console.error);
+                        }, 0);
+                        data.status = "EXPIRED"; // Update the local UI immediately
+                    }
+                    
+                    // FIX: Only count the student as "Out" IF the Watchman has actually scanned them!
+                    if (data.status === 'SCANNED_OUT') {
+                        activeCount++; 
+                    }
+                    
+                    allPasses.push(data);
+                });
+
+                document.getElementById('activeCount').innerText = activeCount;
+                document.getElementById('totalCount').innerText = allPasses.length;
+
+                const renderTable = () => {
+                    adminTableBody.innerHTML = '';
+                    const searchTerm = searchInput.value.toUpperCase();
+                    const statusFilter = filterStatus.value;
+                    
+                    const filtered = allPasses.filter(p => 
+                        (p.usn.includes(searchTerm) || p.passId.includes(searchTerm)) && 
+                        (statusFilter === 'ALL' || p.status === statusFilter)
+                    );
+
+                    filtered.sort((a, b) => b.createdAt - a.createdAt).forEach(pass => {
+                        const tr = document.createElement('tr');
+                        let actionButtons = '-';
+
+                        // Check exact states for the buttons
+                        if (pass.status === 'PENDING_APPROVAL') {
+                            actionButtons = `
+                            <button class="btn-small btn-approve" style="background:#10b981; padding: 5px; color: white; border: none; border-radius: 4px; cursor: pointer;" data-id="${pass.docId}">Approve</button>
+                            <button class="btn-small btn-reject" style="background:#ef4444; padding: 5px; color: white; border: none; border-radius: 4px; cursor: pointer;" data-id="${pass.docId}">Reject</button>
+                            `;
+                        } 
+                        else if (pass.status === 'AUTO_APPROVED') {
+                            actionButtons = `<span style="color: gray; font-size: 0.9em; font-weight: bold;">Ready for Scan</span>`;
+                        } 
+                        // FIX: When Student generates pass, they are walking to the gate.
+                        else if (pass.status === 'ACTIVE') {
+                            actionButtons = `<span style="color: #3b82f6; font-size: 0.9em; font-weight: bold;">Walking to Gate...</span>`;
+                        }
+                        // FIX: When Watchman scans them, they are finally out!
+                        else if (pass.status === 'SCANNED_OUT') {
+                            actionButtons = `<button class="btn-small mark-returned" style="background:#f59e0b; padding: 5px; color: white; border: none; border-radius: 4px; cursor: pointer;" data-id="${pass.docId}">Force Return</button>`;
+                        }
+                        
+                        tr.innerHTML = `<td><strong>${pass.passId}</strong></td><td>${pass.name} <br><small>${pass.usn}</small></td><td><span class="status-badge status-${pass.status}">${pass.status}</span></td><td>${actionButtons}</td>`;
+                        adminTableBody.appendChild(tr);
+                    });
+
+                    // Re-attach listeners
+                    document.querySelectorAll('.btn-approve').forEach(btn => btn.addEventListener('click', async (e) => await updateDoc(doc(db, "gate_passes", e.target.getAttribute('data-id')), { status: "ACTIVE" })));
+                    document.querySelectorAll('.btn-reject').forEach(btn => btn.addEventListener('click', async (e) => await updateDoc(doc(db, "gate_passes", e.target.getAttribute('data-id')), { status: "REJECTED" })));
+                    document.querySelectorAll('.mark-returned').forEach(btn => btn.addEventListener('click', async (e) => await updateDoc(doc(db, "gate_passes", e.target.getAttribute('data-id')), { status: "RETURNED" })));
+                };
+                
+                renderTable();
+                searchInput.addEventListener('input', renderTable);
+                filterStatus.addEventListener('change', renderTable);
+            });
+        }
+
+        // ==========================================
+        // 2. STUDENT MASTER DATABASE LOGIC (New)
+        // ==========================================
+        function loadStudentMasterDB() {
+     // A. Add & Update Student Logic
+     document.getElementById('addStudentForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const usnInput = document.getElementById('newDbUsn');
+        const usn = usnInput.value.trim().toUpperCase();
+        const isUpdate = usnInput.readOnly; // If USN is locked, we are updating an existing student
+
+        // Prevent Duplicate USN Check ONLY if we are adding a NEW student
+        if (!isUpdate) {
+            const docSnap = await getDoc(doc(db, "students", usn));
+            if (docSnap.exists()) {
+                alert("Error: A student with this USN already exists!");
+                return;
+            }
+        }
+
+        const photoFileInput = document.getElementById('newDbPhoto');
+        const submitButton = document.querySelector('#addStudentForm button[type="submit"]');
+
+        const studentData = {
+          name: document.getElementById('newDbName').value.trim(),
+          usn: usn,
+          department: document.getElementById('newDbDept').value.trim(),
+          hostelRoom: document.getElementById('newDbRoom').value.trim(),
+          // We completely removed the secretPin line here so the Admin Database NEVER touches the student's secure PIN!
+          status: document.getElementById('newDbStatus').value,
+          updatedAt: serverTimestamp()
+        };
+
+        if (!isUpdate) {
+          studentData.blocked = false;
+          studentData.createdAt = serverTimestamp();
+          studentData.pinCreated = false; // Prevents the old PIN error
+        }
+
+        try {
+          submitButton.innerText = "Compressing Photo...";
+          submitButton.disabled = true;
+
+          // Process the photo into a tiny text string if the Admin selected one
+          if (photoFileInput.files && photoFileInput.files[0]) {
+            const compressedTextString = await processPhotoToBase64(photoFileInput.files[0]);
+            studentData.photoURL = compressedTextString; // Saves the tiny text string into the database
+          }
+
+          submitButton.innerText = "Saving to Database...";
+          await setDoc(doc(db, "students", usn), studentData, { merge: true });
+          alert(isUpdate ? "Student Record Updated Successfully!" : "Student successfully added to Master Database!");
+          
+          // Reset the form
+          e.target.reset();
+          document.getElementById('newDbUsn').readOnly = false;
+          submitButton.innerText = "Add to Master Database";
+          submitButton.disabled = false;
+        } catch (error) {
+          alert("Error saving record: " + error.message);
+          submitButton.innerText = "Add to Master Database";
+          submitButton.disabled = false;
+        }
+     });
+
+       // B. CLIENT-SIDE PAGINATION & INSTANT SEARCH
+     const masterBody = document.getElementById('masterStudentBody');
+     const searchStudentInput = document.getElementById('searchStudentInput');
+     
+     let allStudents = []; // Holds all students locally for instant search
+     let currentPage = 1;
+     const rowsPerPage = 50;
+
+     // 1. Fetch relevant students and initialize pagination
+     async function fetchAllStudents(searchQuery = "") {
+         masterBody.innerHTML = "<tr><td colspan='7' style='text-align: center; padding: 20px;'>Loading database...</td></tr>";
+         
+         try {
+             let q;
+             const studentsRef = collection(db, "students");
+             
+             // If searching, query Firebase directly
+             if (searchQuery) {
+                 q = query(studentsRef,
+                     where("usn", ">=", searchQuery),
+                     where("usn", "<=", searchQuery + '\uf8ff')
+                 );
+             } else {
+                 // Fetch all for local pagination
+                 q = query(studentsRef);
+             }
+
+             const snapshot = await getDocs(q);
+             allStudents = [];
+             
+             snapshot.forEach(docSnap => {
+                 allStudents.push(docSnap.data());
+             });
+
+             if (allStudents.length === 0) {
+                 masterBody.innerHTML = "<tr><td colspan='7' style='text-align: center; padding: 20px;'>No students found.</td></tr>";
+                 document.getElementById('paginationControls').innerHTML = "";
+                 return;
+             }
+
+             // Reset to page 1 and render
+             currentPage = 1;
+             renderStudentPage(currentPage);
+
+         } catch (error) {
+             masterBody.innerHTML = `<tr><td colspan='7' style='text-align: center; color: red;'>Error loading data: ${error.message}</td></tr>`;
+         }
+     }
+
+     // 2. Render exactly 50 students for the active page
+     function renderStudentPage(page) {
+         masterBody.innerHTML = ""; // Clear existing rows
+         
+         const startIndex = (page - 1) * rowsPerPage;
+         const endIndex = page * rowsPerPage;
+         const paginatedStudents = allStudents.slice(startIndex, endIndex);
+
+         paginatedStudents.forEach(student => {
+             const tr = document.createElement('tr');
+             tr.innerHTML = `
+                 <td><strong>${student.usn}</strong></td>
+                 <td>${student.name || '-'}</td>
+                 <td>${student.department || '-'}</td>
+                 <td>${student.hostelRoom || '-'}</td>
+                 <td>${student.status || 'ACTIVE'}</td>
+                 <td>
+                     <span class="status-badge" style="background: ${student.blocked ? '#ef4444' : '#10b981'}">
+                         ${student.blocked ? 'BLOCKED' : 'ALLOWED'}
+                     </span>
+                 </td>
+                 <td>
+                   <div class="action-dropdown">
+                        <button class="action-menu-btn toggle-menu" data-usn="${student.usn}">⋮</button>
+                        <div id="dropdown-${student.usn}" class="dropdown-content">
+                           <button class="dropdown-item edit-student" data-usn="${student.usn}">
+                           ✏️ Edit Student
+                           </button>
+                           <button class="dropdown-item toggle-block" data-usn="${student.usn}" data-blocked="${student.blocked}">
+                               ${student.blocked ? '✅ Unblock Student' : '🚫 Block Student'}
+                           </button>
+                           <button class="dropdown-item danger delete-student" data-usn="${student.usn}">
+                           🗑 Delete Student
+                           </button>
+                        </div>
+                    </div>
+               </td>
+             `;
+             masterBody.appendChild(tr);
+         });
+
+         // Re-attach dropdown UI listeners to the newly created HTML
+         if (typeof attachActionListeners === "function") {
+             attachActionListeners();
+         }
+
+         renderPaginationControls();
+     }
+
+      // 3. Render traditional Page Numbers
+     function renderPaginationControls() {
+         const paginationContainer = document.getElementById('paginationControls');
+         if (!paginationContainer) return;
+         paginationContainer.innerHTML = ""; // Clear old buttons
+
+         const totalPages = Math.ceil(allStudents.length / rowsPerPage);
+         
+         // Don't show pagination if there's only 1 page
+         if (totalPages <= 1) return;
+
+         for (let i = 1; i <= totalPages; i++) {
+             const btn = document.createElement('button');
+             btn.innerText = i;
+             // Highlight current page
+             btn.className = i === currentPage ? "btn-primary" : "btn-outline";
+             
+             // CSS OVERRIDES: Force inline styling to combat the global "width: 100%" rule
+             btn.style.width = "auto";
+             btn.style.flex = "0 1 auto"; // Prevents flexbox from stretching it
+             btn.style.display = "inline-block";
+             btn.style.padding = "6px 14px";
+             btn.style.margin = "0 4px";
+             btn.style.borderRadius = "5px";
+             btn.style.minWidth = "40px";
+             btn.style.fontWeight = "bold";
+             
+             if (i === currentPage) {
+                 btn.style.pointerEvents = "none"; // Disable clicking the active page
+             }
+
+             btn.addEventListener('click', () => {
+                 currentPage = i;
+                 renderStudentPage(currentPage);
+             });
+
+             paginationContainer.appendChild(btn);
+         }
+     }
+
+     // 4. Server-Side Search (Triggers after typing stops for 500ms)
+     let searchTimeout;
+     searchStudentInput.addEventListener('input', (e) => {
+         clearTimeout(searchTimeout);
+         const searchTerm = e.target.value.trim().toUpperCase();
+         searchTimeout = setTimeout(() => {
+             fetchAllStudents(searchTerm);
+         }, 500);
+     });
+     
+     // Initialize
+     fetchAllStudents();
+
+       function attachActionListeners() {
+    // 0. Dropdown Toggle Logic
+    document.querySelectorAll('.toggle-menu').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent global window click from immediately closing this
+            const usn = e.currentTarget.getAttribute('data-usn');
+            const dropdown = document.getElementById(`dropdown-${usn}`);
+
+            // Close any other open dropdowns
+            document.querySelectorAll('.dropdown-content').forEach(content => {
+                if (content.id !== `dropdown-${usn}`) {
+                    content.classList.remove('show');
+                }
+            });
+
+            dropdown.classList.toggle('show');
+        });
+    });
+
+    // 1. Block/Unblock Logic
+    document.querySelectorAll('.toggle-block').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            const usn = e.currentTarget.getAttribute('data-usn');
+            const isCurrentlyBlocked = e.currentTarget.getAttribute('data-blocked') === 'true';
+            if(confirm(`Are you sure you want to ${isCurrentlyBlocked ? 'UNBLOCK' : 'BLOCK'} ${usn}?`)) {
+                await updateDoc(doc(db, "students", usn), { blocked: !isCurrentlyBlocked });
+            }
+        });
+    });
+
+    // 2. Edit/Update Logic
+    document.querySelectorAll('.edit-student').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const usnToEdit = e.currentTarget.getAttribute('data-usn');
+            const student = allStudents.find(s => s.usn === usnToEdit);
+            if (student) {
+                document.getElementById('newDbUsn').value = student.usn;
+                document.getElementById('newDbUsn').readOnly = true; 
+                document.getElementById('newDbName').value = student.name || "";
+                document.getElementById('newDbDept').value = student.department || "";
+                document.getElementById('newDbRoom').value = student.hostelRoom || "";
+                document.getElementById('newDbPin').value = student.secretPin || "";
+                document.getElementById('newDbStatus').value = student.status || "ACTIVE";
+                document.querySelector('#addStudentForm button[type="submit"]').innerText = "Update Student Record";
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        });
+    });
+
+    // 3. Delete Student Logic
+    document.querySelectorAll('.delete-student').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            const usn = e.currentTarget.getAttribute('data-usn');
+            if(confirm(`⚠️ CRITICAL WARNING:\n\nAre you sure you want to PERMANENTLY DELETE student ${usn} from the master database? This action cannot be undone.`)) {
+                try {
+                    await deleteDoc(doc(db, "students", usn));
+                    // Real-time onSnapshot listener will automatically remove the row from the table
+                } catch (error) {
+                    alert("Database Error: " + error.message);
+                }
+            }
+        });
+    });
+  }
+} // <--- THIS CLOSES loadStudentMasterDB
+
+
+// ==========================================
+// 3. OPTIMIZED EXIT DATA ANALYTICS LOGIC
+// ==========================================
+let allExits = [];
+
+async function loadExitData() {
+    const exitBody = document.getElementById('exitTableBody');
+    const totalExitsEl = document.getElementById('totalExitsCount');
+    const normalExitsEl = document.getElementById('normalExitsCount');
+    const abnormalExitsEl = document.getElementById('abnormalExitsCount');
+    const searchExitInput = document.getElementById('searchExitInput');
+    const filterExitType = document.getElementById('filterExitType');
+    
+    const selectAllCheckbox = document.getElementById('selectAllExits');
+    const btnDeleteSelected = document.getElementById('btnDeleteSelected');
+    
+    if (!exitBody) return;
+    exitBody.innerHTML = "<tr><td colspan='7' style='text-align: center;'>Loading recent logs...</td></tr>";
+
+    async function fetchExits(searchQuery = null) {
+        let exitQuery;
+        if (searchQuery) {
+            exitQuery = query(collection(db, "exitLogs"), where("usn", "==", searchQuery.toUpperCase()));
+        } else {
+            exitQuery = query(collection(db, "exitLogs"), limit(100)); 
+        }
+
+        const snapshot = await getDocs(exitQuery);
+        allExits = [];
+        let normalCount = 0;
+        let abnormalCount = 0;
+
+        snapshot.forEach(docSnap => {
+            const data = docSnap.data();
+            data.docId = docSnap.id; 
+            allExits.push(data);
+            if (data.exitType === 'DAY' || data.exitType === 'NORMAL') normalCount++;
+            if (data.exitType === 'NIGHT' || data.exitType === 'ABNORMAL') abnormalCount++;
+        });
+
+        totalExitsEl.innerText = allExits.length + (searchQuery ? "" : " (Recent)");
+        normalExitsEl.innerText = normalCount;
+        abnormalExitsEl.innerText = abnormalCount;
+        
+        renderExitTable();
+    }
+
+    // Helper: Manage Bulk Delete Button Visibility & Counter
+    function updateBulkDeleteUI() {
+        const checkedBoxes = document.querySelectorAll('.exit-checkbox:checked');
+        const allCheckboxes = document.querySelectorAll('.exit-checkbox');
+
+        if (checkedBoxes.length > 0) {
+            btnDeleteSelected.style.display = 'block';
+            btnDeleteSelected.innerText = `Delete Selected (${checkedBoxes.length})`;
+        } else {
+            btnDeleteSelected.style.display = 'none';
+        }
+
+        if (selectAllCheckbox && allCheckboxes.length > 0) {
+            selectAllCheckbox.checked = (checkedBoxes.length === allCheckboxes.length);
+        }
+    }
+
+    function renderExitTable() {
+        exitBody.innerHTML = '';
+        const searchTerm = searchExitInput.value.toUpperCase();
+        const typeFilter = filterExitType.value;
+
+        const filtered = allExits.filter(e => {
+            const matchesSearch = (e.usn && e.usn.includes(searchTerm)) || (e.studentName && e.studentName.toUpperCase().includes(searchTerm));
+            const matchesType = typeFilter === 'ALL' || e.exitType === typeFilter;
+            return matchesSearch && matchesType;
+        });
+
+        if (filtered.length === 0) {
+            exitBody.innerHTML = "<tr><td colspan='7' style='text-align: center;'>No exit records found.</td></tr>";
+            if (btnDeleteSelected) btnDeleteSelected.style.display = 'none';
+            if (selectAllCheckbox) selectAllCheckbox.checked = false;
+            return;
+        }
+
+        filtered.sort((a, b) => (b.timestamp?.toMillis() || 0) - (a.timestamp?.toMillis() || 0)).forEach(exit => {
+            const tr = document.createElement('tr');
+            
+            let displayExitDate = exit.exitDate || '';
+            let displayExitTime = exit.exitTime || '';
+            
+            if (exit.timestamp) {
+                const dateObj = exit.timestamp.toDate();
+                displayExitDate = dateObj.toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                displayExitTime = dateObj.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }).toUpperCase();
+            }
+
+            const returnText = exit.returnTime 
+                ? `<strong>${exit.returnDate || ''}</strong><br><small>${exit.returnTime}</small>` 
+                : `<span style="color:#f59e0b; font-weight:bold;">Awaiting Return...</span>`;
+            
+            tr.innerHTML = `
+                <td style="text-align: center;">
+                    <input type="checkbox" class="exit-checkbox" value="${exit.docId}" style="width: 18px; height: 18px; cursor: pointer;">
+                </td>
+                <td><strong>${exit.usn || ''}</strong><br><small>${exit.studentName || ''}</small></td>
+                <td><strong>${exit.roomNumber || ''}</strong><br><small>${exit.department || ''}</small></td>
+                <td><strong>${displayExitDate}</strong><br><small>${displayExitTime}</small></td>
+                <td>${returnText}</td>
+                <td><span class="status-badge" style="background: ${exit.exitType === 'DAY' || exit.exitType === 'NORMAL' ? '#10b981' : '#ef4444'}">${exit.exitType || 'DAY'}</span></td>
+                <td>
+                    <button class="btn-small delete-exit-btn" data-id="${exit.docId}" style="background: #ef4444; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; color: white;" title="Delete Record">🗑️</button>
+                </td>
+            `;
+            exitBody.appendChild(tr);
+        });
+
+        // Attach Event Listeners to Dynamically Rendered Checkboxes
+        document.querySelectorAll('.exit-checkbox').forEach(box => {
+            box.addEventListener('change', updateBulkDeleteUI);
+        });
+
+        // Attach Event Listeners to Individual Delete Buttons
+        document.querySelectorAll('.delete-exit-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const docId = e.currentTarget.getAttribute('data-id');
+                if (confirm("Are you sure you want to permanently delete this exit record? This action cannot be undone.")) {
+                    try {
+                        e.currentTarget.innerText = "⏳";
+                        e.currentTarget.disabled = true;
+                        
+                        await deleteDoc(doc(db, "exitLogs", docId));
+                        
+                        const currentSearch = searchExitInput.value.trim();
+                        fetchExits(currentSearch === "" ? null : currentSearch);
+                    } catch (error) {
+                        alert("Database Error: Could not delete record. " + error.message);
+                        e.currentTarget.innerText = "🗑️";
+                        e.currentTarget.disabled = false;
+                    }
+                }
+            });
+        });
+
+        updateBulkDeleteUI();
+    }
+
+    // Initial data fetch
+    fetchExits();
+
+    // Unified search debounce handler (replaces conflicting duplicate listeners)
+    let exitTimeout = null;
+    searchExitInput.addEventListener('input', () => {
+        clearTimeout(exitTimeout);
+        exitTimeout = setTimeout(() => {
+            const val = searchExitInput.value.trim();
+            if (val.length >= 3 || val.length === 0) {
+                fetchExits(val === "" ? null : val);
+            } else {
+                renderExitTable(); // Instant local filter for short queries
+            }
+        }, 400);
+    });
+
+    filterExitType.addEventListener('change', renderExitTable);
+
+    // Master "Select All" Toggle Logic
+    if (selectAllCheckbox) {
+        const newSelectAll = selectAllCheckbox.cloneNode(true);
+        selectAllCheckbox.parentNode.replaceChild(newSelectAll, selectAllCheckbox);
+        
+        newSelectAll.addEventListener('change', (e) => {
+            const isChecked = e.target.checked;
+            document.querySelectorAll('.exit-checkbox').forEach(box => {
+                box.checked = isChecked;
+            });
+            updateBulkDeleteUI();
+        });
+    }
+
+    // Bulk Delete Execution Logic
+    if (btnDeleteSelected) {
+        const newBtnDelete = btnDeleteSelected.cloneNode(true);
+        btnDeleteSelected.parentNode.replaceChild(newBtnDelete, btnDeleteSelected);
+        
+        newBtnDelete.addEventListener('click', async () => {
+            const checkedBoxes = document.querySelectorAll('.exit-checkbox:checked');
+            if (checkedBoxes.length === 0) return;
+
+            if (confirm(`⚠️ WARNING: Are you sure you want to PERMANENTLY delete ${checkedBoxes.length} selected record(s)? This action cannot be undone.`)) {
+                try {
+                    newBtnDelete.innerText = "Deleting...";
+                    newBtnDelete.disabled = true;
+                    
+                    const deletePromises = Array.from(checkedBoxes).map(box => 
+                        deleteDoc(doc(db, "exitLogs", box.value))
+                    );
+                    
+                    await Promise.all(deletePromises);
+                    alert(`${checkedBoxes.length} record(s) permanently deleted.`);
+                    
+                    const currentSearch = searchExitInput.value.trim();
+                    fetchExits(currentSearch === "" ? null : currentSearch);
+                } catch (error) {
+                    alert("Database Error during bulk deletion: " + error.message);
+                } finally {
+                    newBtnDelete.innerText = "Delete Selected";
+                    newBtnDelete.disabled = false;
+                }
+            }
+        });
+    }
+}
+
+// ==========================================
+// 4. EXPORT TO CSV LOGIC
+// ==========================================
+async function downloadTableAsCSV() {
+  const exportBtn = document.getElementById('btnExportCSV');
+  const originalText = exportBtn.innerText;
+  exportBtn.innerText = "Extracting Database...";
+  exportBtn.disabled = true;
+
+  try {
+    let csv = [];
+    // Define exact headers matching the database schema for a perfectly clean Excel file
+    csv.push('"USN","Student Name","Department","Room","Exit Date","Exit Time","Return Date","Return Time","Exit Type","Pass ID","Scanned By"');
+
+    // Fetch ALL logs for export, bypassing the 100 UI limit
+    const fullExitQuery = query(collection(db, "exitLogs"), orderBy("timestamp", "desc"));
+    const snapshot = await getDocs(fullExitQuery);
+
+    snapshot.forEach(docSnap => {
+      const data = docSnap.data();
+      
+      let exportExitDate = data.exitDate || '';
+      let exportExitTime = data.exitTime || '';
+      
+      // Reconstruct time from the accurate Firebase Timestamp for CSV accuracy
+      if (data.timestamp) {
+          const dateObj = data.timestamp.toDate();
+          exportExitDate = dateObj.toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+          exportExitTime = dateObj.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true }).toUpperCase();
+      }
+
+      let row = [
+        `"${data.usn || ''}"`,
+        `"${data.studentName || ''}"`,
+        `"${data.department || ''}"`,
+        `"${data.roomNumber || ''}"`,
+        `"${exportExitDate}"`,
+        `"${exportExitTime}"`,
+        `"${data.returnDate || 'AWAITING RETURN'}"`,
+        `"${data.returnTime || ''}"`,
+        `"${data.exitType || ''}"`,
+        `"${data.passId || ''}"`,
+        `"${data.scannedBy || ''}"`
+      ];
+      csv.push(row.join(','));
+    });
+
+    const today = new Date();
+    const dateString = `${today.getDate()}-${today.getMonth() + 1}-${today.getFullYear()}`;
+    const filename = `SmartGate_Exit_Data_Complete_${dateString}.csv`;
+    const csvFile = new Blob([csv.join('\n')], {type: "text/csv"});
+
+    const downloadLink = document.createElement("a");
+    downloadLink.download = filename;
+    downloadLink.href = window.URL.createObjectURL(csvFile);
+    downloadLink.style.display = "none";
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+
+  } catch (error) {
+    console.error("Export Error:", error);
+    alert("Failed to export full database. Check console for details.");
+  } finally {
+    exportBtn.innerText = originalText;
+    exportBtn.disabled = false;
+  }
+}
+
+const exportBtn = document.getElementById('btnExportCSV');
+if (exportBtn) {
+  // Remove old listeners if any exist, then attach the new async one
+  exportBtn.replaceWith(exportBtn.cloneNode(true));
+  document.getElementById('btnExportCSV').addEventListener('click', downloadTableAsCSV);
+}
+
+// ==========================================
+// 5. CAMPUS LOCKDOWN TOGGLE LOGIC
+// ==========================================
+const btnLockdownToggle = document.getElementById('btnLockdownToggle');
+let isCampusLocked = false;
+
+if (btnLockdownToggle) {
+    onSnapshot(doc(db, "system_config", "campus_state"), (docSnap) => {
+        if (docSnap.exists()) {
+            isCampusLocked = docSnap.data().lockdown || false;
+        } else {
+            isCampusLocked = false;
+        }
+        
+        if (isCampusLocked) {
+            btnLockdownToggle.style.background = "#ef4444";
+            btnLockdownToggle.innerText = "🔴 Campus: RESTRICTED";
+        } else {
+            btnLockdownToggle.style.background = "#10b981";
+            btnLockdownToggle.innerText = "🟢 Campus: OPEN";
+        }
+    });
+
+    btnLockdownToggle.addEventListener('click', async () => {
+        const newState = !isCampusLocked;
+        const confirmMsg = newState 
+            ? "Are you sure you want to RESTRICT campus exits? Students will be blocked from generating passes." 
+            : "Are you sure you want to OPEN campus exits?";
+        
+        if (confirm(confirmMsg)) {
+            btnLockdownToggle.innerText = "Updating...";
+            await setDoc(doc(db, "system_config", "campus_state"), { lockdown: newState }, { merge: true });
+        }
+    });
+ }     
+ 
+        // --- NEW: APPROVAL CUTOFF TOGGLE LOGIC ---
+const cutoffToggle = document.getElementById('cutoffToggle');
+if (cutoffToggle) {
+    // Read current state
+    onSnapshot(doc(db, "system_config", "campus_state"), (docSnap) => {
+        if (docSnap.exists() && docSnap.data().approvalCutoff) {
+            cutoffToggle.value = docSnap.data().approvalCutoff;
+        }
+    });
+
+    // Write new state
+    cutoffToggle.addEventListener('change', async (e) => {
+        const newVal = e.target.value;
+        cutoffToggle.disabled = true;
+        try {
+            await setDoc(doc(db, "system_config", "campus_state"), { approvalCutoff: newVal }, { merge: true });
+            alert(`QR Pass Approval Cutoff successfully updated to ${newVal === '16:00' ? '4:00 PM' : '6:00 PM'}.`);
+        } catch(error) {
+            alert("Failed to update cutoff time. " + error.message);
+        } finally {
+            cutoffToggle.disabled = false;
+        }
+    });
+}
+// -----------------------------------------
+
+      // 6. PIN RESET APPROVAL LOGIC
+    function loadPinRequests() {
+    const pinBody = document.getElementById('pinRequestsBody');
+    // OPTIMIZED: Only fetch PENDING requests. Ignores hundreds of old approved requests.
+    const pendingQuery = query(collection(db, "pinResetRequests"), where("status", "==", "PENDING"));
+    
+    onSnapshot(pendingQuery, (snapshot) => {
+      pinBody.innerHTML = "";
+      snapshot.forEach(docSnap => {
+        const req = docSnap.data();
+        if(req.status !== "PENDING") return; // Only show pending requests
+        
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${req.studentName}</strong></td>
+          <td>${req.usn}</td>
+          <td>${req.department}</td>
+          <td><span class="status-badge" style="background:#f59e0b;">${req.status}</span></td>
+          <td>
+            <button class="btn-small approve-pin" data-id="${docSnap.id}" data-usn="${req.usn}" style="background:#10b981;">Approve Reset</button>
+            <button class="btn-small reject-pin" data-id="${docSnap.id}" style="background:#ef4444;">Reject</button>
+          </td>
+        `;
+        pinBody.appendChild(tr);
+      });
+
+      document.querySelectorAll('.approve-pin').forEach(btn => btn.addEventListener('click', async (e) => {
+        if(!confirm("Approve reset? This wipes the student's current PIN.")) return;
+        const reqId = e.target.getAttribute('data-id');
+        const usn = e.target.getAttribute('data-usn');
+        
+        await updateDoc(doc(db, "students", usn), {
+          pin: null,
+          pinCreated: false,
+          pinResetRequired: true
+        });
+        await updateDoc(doc(db, "pinResetRequests", reqId), { status: "APPROVED" });
+      }));
+
+      document.querySelectorAll('.reject-pin').forEach(btn => btn.addEventListener('click', async (e) => {
+        const reqId = e.target.getAttribute('data-id');
+        await updateDoc(doc(db, "pinResetRequests", reqId), { status: "REJECTED" });
+      }));
+    });
+  }
+     const btnViewSupport = document.getElementById('btnViewSupport');
+const supportMailModal = document.getElementById('supportMailModal');
+const btnCloseSupportModal = document.getElementById('btnCloseSupportModal');
+const supportMailBody = document.getElementById('supportMailBody');
+const supportBadge = document.getElementById('supportBadge');
+
+if (btnViewSupport && supportMailModal) {
+    btnViewSupport.addEventListener('click', () => {
+        supportMailModal.classList.remove('hidden');
+    });
+
+    btnCloseSupportModal.addEventListener('click', () => {
+        supportMailModal.classList.add('hidden');
+    });
+
+    const supportQuery = query(collection(db, "supportRequests"), orderBy("createdAt", "desc"));
+    onSnapshot(supportQuery, (snapshot) => {
+        supportMailBody.innerHTML = "";
+        let openCount = 0;
+        
+        if(snapshot.empty) {
+            supportMailBody.innerHTML = "<tr><td colspan='5' style='text-align: center;'>No support mails found.</td></tr>";
+            supportBadge.style.display = "none";
+            return;
+        }
+        
+        snapshot.forEach(docSnap => {
+            const req = docSnap.data();
+            if (req.status === "OPEN") openCount++;
+            
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${req.name || 'N/A'}</strong><br><small>${req.usn || ''} | ${req.email || ''}</small></td>
+                <td><strong>${req.subject || '-'}</strong></td>
+                <td style="max-width: 250px; white-space: normal; word-wrap: break-word; line-height: 1.4;"><small>${req.description || '-'}</small></td>
+                <td><span class="status-badge" style="background:${req.status === 'OPEN' ? '#f59e0b' : '#10b981'};">${req.status || 'UNKNOWN'}</span></td>
+                <td>
+                    ${req.status === 'OPEN' 
+                        ? `<button class="btn-small resolve-mail" data-id="${docSnap.id}" style="background:#10b981;">Resolve</button>` 
+                        : `<span style="color:#10b981; font-size:0.85rem; font-weight:bold;">Resolved</span>`}
+                </td>
+            `;
+            supportMailBody.appendChild(tr);
+        });
+
+        // Update the red notification badge on the mail icon
+        if (openCount > 0) {
+            supportBadge.innerText = openCount;
+            supportBadge.style.display = "block";
+        } else {
+            supportBadge.style.display = "none";
+        }
+
+        // Attach event listeners for marking tickets as resolved
+        document.querySelectorAll('.resolve-mail').forEach(btn => btn.addEventListener('click', async (e) => {
+            if(!confirm("Mark this support ticket as resolved?")) return;
+            const reqId = e.target.getAttribute('data-id');
+            e.target.innerText = "Updating...";
+            e.target.disabled = true;
+            await updateDoc(doc(db, "supportRequests", reqId), { status: "RESOLVED" });
+        }));
+    });
+}
+
+      // ==========================================
+// 7. RESOLVE USN CONFLICT LOGIC
+// ==========================================
+window.resetStudentUSN = async function() {
+    const usnInput = document.getElementById("conflictUSN").value.trim().toUpperCase();
+    const messageEl = document.getElementById("resetMessage");
+    
+    if (!usnInput) {
+        messageEl.innerText = "Please enter a valid USN.";
+        messageEl.style.color = "#ef4444"; // Red
+        return;
+    }
+
+    if (!confirm(`Are you sure you want to completely delete the profile associated with ${usnInput}?`)) {
+        return;
+    }
+
+    try {
+        messageEl.innerText = "Searching for conflicting account...";
+        messageEl.style.color = "#3b82f6"; // Blue
+
+        // Query the students collection for the stolen USN
+        const studentsRef = collection(db, "students");
+        const q = query(studentsRef, where("usn", "==", usnInput));
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+            messageEl.innerText = "No student found with this USN in the database.";
+            messageEl.style.color = "#ef4444"; // Red
+            return;
+        }
+
+        // Loop through results and delete the document mapping
+        querySnapshot.forEach(async (docSnap) => {
+            await deleteDoc(doc(db, "students", docSnap.id));
+        });
+
+        messageEl.innerText = `Success: USN ${usnInput} has been unlinked. The real student can now register.`;
+        messageEl.style.color = "#10b981"; // Green
+        document.getElementById("conflictUSN").value = ""; // Clear input
+
+    } catch (error) {
+        console.error("Error unlinking USN: ", error);
+        messageEl.innerText = "Error unlinking USN. Check console for details or verify admin permissions.";
+        messageEl.style.color = "#ef4444"; // Red
+    }
+};
+     </script>
+  </body>
+</html>
